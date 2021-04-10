@@ -8,24 +8,34 @@ on:
     types: [created]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          path: |
+            ~/.npm
+            ~/.cache/firebase/emulators/
+          key: ${{ runner.os }}-firestore-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-
-      - uses: actions/setup-node@v2
+            ${{ runner.os }}-firestore-
+      - name: Use Node.js 14
+        uses: actions/setup-node@v1
         with:
           node-version: 14
+      - uses: actions/setup-java@v2
+        with:
+          distribution: "adopt" # See 'Supported distributions' for available options
+          java-version: "11"
       - run: npm ci --prefer-offline
-      - run: npm test
+      - run: npx firebase emulators:exec --project test-project npm run coverage
+      - name: Codecov
+        uses: codecov/codecov-action@v1.0.6
 
   publish-npm:
-    needs: build
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -45,7 +55,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
   publish-gpr:
-    needs: build
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
