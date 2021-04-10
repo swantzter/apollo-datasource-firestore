@@ -31,8 +31,6 @@ jobs:
           java-version: "11"
       - run: npm ci --prefer-offline
       - run: npx firebase emulators:exec "npm run coverage"
-      - name: Codecov
-        uses: codecov/codecov-action@v1.0.6
 
   publish-npm:
     needs: test
