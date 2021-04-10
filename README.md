@@ -1,5 +1,10 @@
 # Apollo DataSource for Firestore
 
+[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+![qa](https://github.com/swantzter/apollo-datasource-firestore/workflows/qa/badge.svg)
+![publish](https://github.com/swantzter/apollo-datasource-firestore/workflows/publish/badge.svg)
+[![codecov](https://codecov.io/gh/swantzter/apollo-datasource-firestore/branch/main/graph/badge.svg)](https://codecov.io/gh/swantzter/apollo-datasource-firestore)
+
 This is a Firestore DataSource for Apollo GraphQL Servers. It was adapted from the [CosmosDB DataSource](https://github.com/andrejpk/apollo-datasource-cosmosdb)
 
 ## Usage
