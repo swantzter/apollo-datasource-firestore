@@ -16,7 +16,9 @@ by passing a collection reference created by the Firestore library.
 
 ```typescript
 export interface UserDoc {
-  id: string // a string id value is required for entities using this library. It will be used for the firestore document ID but not stored in the document in firestore.
+  // a string id value is required for entities using this library.
+  // It will be used for the firestore document ID but not stored in the document in firestore.
+  id: string
   name: string
   groupId: number
 }
