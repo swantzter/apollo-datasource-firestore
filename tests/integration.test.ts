@@ -227,7 +227,7 @@ describe('FirestoreDataSource', () => {
         name: 'Three'
       })
 
-      const result = await userSource.findManyByQuery(c => c.where('email', '==', email))
+      const result = await userSource.findManyByQuery(c => c.where('email', '==', email).orderBy('name'))
 
       assert.deepStrictEqual(result.map(u => u.id), [idOne, idTwo])
     })
