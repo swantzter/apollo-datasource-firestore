@@ -5,6 +5,9 @@ module.exports = {
     sourceType: 'module',
     project: 'tsconfig.json'
   },
+  include: [
+    'tests'
+  ],
   rules: {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/strict-boolean-expressions': 'off',

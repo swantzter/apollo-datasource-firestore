@@ -1,6 +1,6 @@
 {
   "name": "apollo-datasource-firestore",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "An Apollo DataSource for Firestore",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,7 +9,8 @@
     "watch": "tsc --watch",
     "test": "ts-mocha tests/**/*.test.ts",
     "coverage": "nyc -r lcov -r text npm test",
-    "lint": "eslint src/**/*.ts tests/**/*.ts"
+    "lint": "eslint src/**/*.ts tests/**/*.ts",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
