@@ -1,7 +1,7 @@
 import { DataSource } from 'apollo-datasource'
 import { ApolloError } from 'apollo-server-errors'
 import { InMemoryLRUCache, KeyValueCache } from 'apollo-server-caching'
-import { CollectionReference, Query } from '@google-cloud/firestore'
+import type { CollectionReference, Query } from '@google-cloud/firestore'
 
 import { Logger, isFirestoreCollection, FirestoreConverter } from './helpers'
 import { createCachingMethods, CachedMethods, FindArgs } from './cache'

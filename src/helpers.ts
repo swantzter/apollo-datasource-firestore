@@ -1,4 +1,4 @@
-import { CollectionReference, FirestoreDataConverter } from '@google-cloud/firestore'
+import type { CollectionReference, FirestoreDataConverter } from '@google-cloud/firestore'
 
 export const isFirestoreCollection = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
