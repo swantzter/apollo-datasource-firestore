@@ -18,13 +18,15 @@ by passing a collection reference created by the Firestore library.
 export interface UserDoc {
   // a string id value is required for entities using this library.
   // It will be used for the firestore document ID but not stored in the document in firestore.
-  id: string
+  readonly id: string
+  readonly collection: 'users'
   name: string
   groupId: number
 }
 
 export interface PostsDoc {
-  id: string
+  readonly id: string
+  readonly collection: 'posts'
   title: string
 }
 

@@ -16,7 +16,7 @@ const placeholderHandler = () => {
 
 export type QueryFindArgs = FindArgs
 
-export class FirestoreDataSource<TData extends { id: string }, TContext>
+export class FirestoreDataSource<TData extends { readonly id: string, readonly collection: string }, TContext>
   extends DataSource<TContext>
   implements CachedMethods<TData> {
   collection: CollectionReference<TData>
@@ -51,7 +51,7 @@ export class FirestoreDataSource<TData extends { id: string }, TContext>
     return results
   }
 
-  async createOne (newDoc: TData | Omit<TData, 'id'>, { ttl }: QueryFindArgs = {}) {
+  async createOne (newDoc: TData | Omit<TData, 'id' | 'collection'>, { ttl }: QueryFindArgs = {}) {
     if ('id' in newDoc) {
       return await this.updateOne(newDoc)
     } else {

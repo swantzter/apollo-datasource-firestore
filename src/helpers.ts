@@ -12,10 +12,10 @@ export const isFirestoreCollection = (
   )
 }
 
-export const FirestoreConverter = <TData extends { id: string }>(): FirestoreDataConverter<TData> => ({
-  toFirestore: ({ id, ...data }: Partial<TData>) => data,
+export const FirestoreConverter = <TData extends { readonly id: string, readonly collection: string }>(): FirestoreDataConverter<TData> => ({
+  toFirestore: ({ id, collection, ...data }: Partial<TData>) => data,
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  fromFirestore: (snap: FirebaseFirestore.QueryDocumentSnapshot) => ({ id: snap.id, ...snap.data() }) as TData
+  fromFirestore: (snap: FirebaseFirestore.QueryDocumentSnapshot) => ({ id: snap.id, collection: snap.ref.parent.id, ...snap.data() }) as TData
 })
 
 export interface Logger {
