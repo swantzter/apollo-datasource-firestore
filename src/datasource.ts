@@ -27,8 +27,10 @@ export class FirestoreDataSource<TData extends { readonly id: string, readonly c
   findOneById: CachedMethods<TData>['findOneById'] = placeholderHandler
   findManyByIds: CachedMethods<TData>['findManyByIds'] = placeholderHandler
   deleteFromCacheById: CachedMethods<TData>['deleteFromCacheById'] = placeholderHandler
-  dataLoader: CachedMethods<TData>['dataLoader']
   primeLoader: CachedMethods<TData>['primeLoader'] = placeholderHandler
+  dataLoader: CachedMethods<TData>['dataLoader']
+  cache: CachedMethods<TData>['cache']
+  cachePrefix: CachedMethods<TData>['cachePrefix']
 
   /**
    *

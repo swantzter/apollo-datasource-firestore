@@ -49,6 +49,8 @@ export interface CachedMethods<DType> {
   ) => Promise<Array<DType | undefined>>
   deleteFromCacheById: (id: string) => Promise<void>
   dataLoader?: DataLoader<string, DType, string>
+  cache?: KeyValueCache
+  cachePrefix?: string
   primeLoader: (item: DType | DType[], ttl?: number) => void
 }
 
@@ -116,7 +118,9 @@ export const createCachingMethods = <DType extends { id: string }>({
         }
       }
     },
-    dataLoader: loader
+    dataLoader: loader,
+    cache,
+    cachePrefix
   }
 
   return methods
