@@ -111,9 +111,9 @@ export const createCachingMethods = <DType extends { id: string }>({
     primeLoader: async (docs, ttl?: number) => {
       docs = Array.isArray(docs) ? docs : [docs]
       for (const doc of docs) {
-        const key = doc.id
-        loader.prime(key, doc)
-        if (ttl) {
+        loader.prime(doc.id, doc)
+        const key = cachePrefix + doc.id
+        if (!!ttl || !!(await cache.get(key))) {
           await cache.set(key, EJSON.stringify(doc), { ttl })
         }
       }

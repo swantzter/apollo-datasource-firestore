@@ -125,6 +125,24 @@ describe('FirestoreDataSource', () => {
       assert.deepStrictEqual(updated, { ...createData, ...updateData })
     })
 
+    it('Partial update should update cache', async () => {
+      const createData = {
+        email: 'hello3@test.com'
+      }
+      const updateData = {
+        name: 'Testson'
+      }
+
+      const { id: createdId, collection: newCollection, ...created } = await userSource.createOne(createData, { ttl: 60 }) as UserDoc
+      const { id: updatedId } = await userSource.updateOnePartial(createdId, updateData) as UserDoc
+      const { id: refetchedId, collection: refetchedCollection, ...refetched } = await userSource.findOneById(createdId, { ttl: 60 }) as UserDoc
+
+      assert.strictEqual(updatedId, refetchedId)
+      assert.strictEqual(newCollection, refetchedCollection)
+      assert.deepStrictEqual(refetched, { ...createData, ...updateData })
+      assert.notDeepStrictEqual(created, refetched)
+    })
+
     it('Partial update should not be able to change the ID', async () => {
       const createData = {
         email: 'hello3@test.com'
