@@ -11,7 +11,7 @@
     "test": "ts-mocha tests/**/*.test.ts",
     "coverage": "nyc -r lcov -r text npm test",
     "lint": "eslint src/**/*.ts tests/**/*.ts",
-    "prepare": "npm run build"
+    "prepack": "npm run build"
   },
   "repository": {
     "type": "git",
