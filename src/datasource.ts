@@ -48,7 +48,7 @@ export class FirestoreDataSource<TData extends { readonly id: string, readonly c
       this.primeLoader(results, ttl)
     }
     this.options?.logger?.info(
-      `CosmosDataSource.findManyByQuery: complete. rows: ${qSnap.size}, Read Time: ${qSnap.readTime.toDate()}`
+      `FirestoreDataSource/findManyByQuery: complete. rows: ${qSnap.size}, Read Time: ${qSnap.readTime.toDate()}`
     )
     return results
   }

@@ -1,8 +1,8 @@
-import { CollectionReference, FieldPath } from '@google-cloud/firestore'
+import { CollectionReference, FieldPath, QuerySnapshot } from '@google-cloud/firestore'
 import { KeyValueCache } from 'apollo-server-caching'
 import DataLoader from 'dataloader'
-import { EJSON } from 'bson'
 import { FirestoreDataSourceOptions } from './datasource'
+import { replacer, reviverFactory } from './helpers'
 
 // https://github.com/graphql/dataloader#batch-function
 const orderDocs = <V>(ids: readonly string[]) => (
@@ -60,18 +60,24 @@ export const createCachingMethods = <DType extends { id: string }>({
   options
 }: createCatchingMethodArgs<DType>): CachedMethods<DType> => {
   const loader = new DataLoader<string, DType>(async (ids) => {
+    const qSnaps: Array<Promise<QuerySnapshot<DType>>> = []
+    // the 'in' operator only supports up to 10 values at a time
+    for (let idx = 0; idx < ids.length; idx += 10) {
+      const idSlice = ids.slice(idx, idx + 10)
+      options?.logger?.debug(
+        `FirestoreDataSource/DataLoader: loading for IDs: ${idSlice}`
+      )
+      qSnaps.push(collection.where(FieldPath.documentId(), 'in', idSlice).get())
+    }
+    const documents = (await Promise.all(qSnaps)).flatMap(qSnap => qSnap.docs).map(dSnap => dSnap.exists ? dSnap.data() : undefined)
     options?.logger?.debug(
-      `FirestoreDataSource/DataLoader: loading for IDs: ${ids}`
+      `FirestoreDataSource/DataLoader: response count: ${documents.length}`
     )
-    const qSnap = await collection.where(FieldPath.documentId(), 'in', ids).get()
 
-    const documents = qSnap.docs.map(dSnap => dSnap.exists ? dSnap.data() : undefined)
-
-    options?.logger?.debug(
-      `FirestoreDataSource/DataLoader: response count: ${qSnap.size}`
-    )
     return orderDocs<DType>(ids)(documents)
   })
+
+  const reviver = reviverFactory(collection)
 
   const cachePrefix = `firestore-${collection.path}-`
 
@@ -82,13 +88,13 @@ export const createCachingMethods = <DType extends { id: string }>({
 
       const cacheDoc = await cache.get(key)
       if (cacheDoc) {
-        return EJSON.parse(cacheDoc) as DType
+        return JSON.parse(cacheDoc, reviver) as DType
       }
 
       const doc = await loader.load(id)
 
       if (Number.isInteger(ttl)) {
-        await cache.set(key, EJSON.stringify(doc), { ttl })
+        await cache.set(key, JSON.stringify(doc, replacer), { ttl })
       }
 
       return doc
@@ -114,7 +120,7 @@ export const createCachingMethods = <DType extends { id: string }>({
         loader.prime(doc.id, doc)
         const key = cachePrefix + doc.id
         if (!!ttl || !!(await cache.get(key))) {
-          await cache.set(key, EJSON.stringify(doc), { ttl })
+          await cache.set(key, JSON.stringify(doc, replacer), { ttl })
         }
       }
     },

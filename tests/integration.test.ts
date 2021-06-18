@@ -1,5 +1,5 @@
 /* eslint-env mocha */
-import { CollectionReference, Firestore } from '@google-cloud/firestore'
+import { CollectionReference, DocumentReference, Firestore, GeoPoint, Timestamp } from '@google-cloud/firestore'
 import fetch from 'node-fetch'
 import assert from 'assert'
 
@@ -14,6 +14,10 @@ interface UserDoc {
   readonly collection: string
   email: string
   name?: string
+  createdAt?: Timestamp
+  locatedAt?: GeoPoint
+  documentRef?: DocumentReference
+  collectionRef?: CollectionReference
 }
 
 interface Context {
@@ -229,12 +233,61 @@ describe('FirestoreDataSource', () => {
       assert.deepStrictEqual(foundOne, foundAgain)
     })
 
-    it.skip('Should serialize and de-serialize Firestore Timestamps')
+    it('Should serialize and de-serialize Firestore Timestamps', async () => {
+      const createdOne = await userSource.createOne({
+        email: 'hello@test.com',
+        createdAt: Timestamp.now()
+      }) as UserDoc
+
+      const foundOne = await userSource.findOneById(createdOne.id, { ttl: 1000 })
+
+      // modify db in a way that won't hit the dataSource cache
+      await usersCollection.doc(createdOne.id).update({ email: 'new@test.com' })
+
+      const foundAgain = await userSource.findOneById(createdOne.id, { ttl: 1000 })
+
+      assert.deepStrictEqual(foundOne, foundAgain)
+      assert.ok(foundAgain.createdAt instanceof Timestamp)
+    })
+
+    it('Should serialize and de-serialize Firestore GeoPoints', async () => {
+      const createdOne = await userSource.createOne({
+        email: 'hello@test.com',
+        locatedAt: new GeoPoint(51.145, 12.5512334)
+      }) as UserDoc
+
+      const foundOne = await userSource.findOneById(createdOne.id, { ttl: 1000 })
+
+      // modify db in a way that won't hit the dataSource cache
+      await usersCollection.doc(createdOne.id).update({ email: 'new@test.com' })
+
+      const foundAgain = await userSource.findOneById(createdOne.id, { ttl: 1000 })
+
+      assert.deepStrictEqual(foundOne, foundAgain)
+      assert.ok(foundAgain.locatedAt instanceof GeoPoint)
+    })
+
+    it('Should serialize and de-serialize Firestore DocumentReferences', async () => {
+      const createdOne = await userSource.createOne({
+        email: 'hello@test.com',
+        documentRef: firestore.doc('users/abc')
+      }) as UserDoc
+
+      const foundOne = await userSource.findOneById(createdOne.id, { ttl: 1000 })
+
+      // modify db in a way that won't hit the dataSource cache
+      await usersCollection.doc(createdOne.id).update({ email: 'new@test.com' })
+
+      const foundAgain = await userSource.findOneById(createdOne.id, { ttl: 1000 })
+
+      assert.deepStrictEqual(foundOne, foundAgain)
+      assert.ok(foundAgain.documentRef instanceof DocumentReference)
+    })
   })
 
   describe('findManyByIds', () => {
     it('Should find multiple documents by ID', async () => {
-    // make sure we have extra users in the DB
+      // make sure we have extra users in the DB
       const createdOne = await userSource.createOne({
         email: 'hello@test.com'
       }) as UserDoc
@@ -248,6 +301,21 @@ describe('FirestoreDataSource', () => {
       const foundOnes = await userSource.findManyByIds([createdTwo.id, createdOne.id])
 
       assert.deepStrictEqual(foundOnes, [createdTwo, createdOne])
+    })
+
+    it('Should find more than 10 documents by ID', async () => {
+      const createPromises: Array<Promise<UserDoc>> = []
+      for (let idx = 0; idx < 23; idx++) {
+        createPromises.push(userSource.createOne({
+          email: `hello${idx}@test.com`
+        }))
+      }
+      const created = await Promise.all(createPromises)
+      await Promise.all(created.map(c => userSource.deleteFromCacheById(c.id))) // eslint-disable-line @typescript-eslint/promise-function-async
+
+      const foundOnes = await userSource.findManyByIds(created.map(u => u.id))
+
+      assert.deepStrictEqual(foundOnes, created)
     })
   })
 
