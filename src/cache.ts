@@ -1,4 +1,4 @@
-import { CollectionReference, FieldPath, QuerySnapshot } from '@google-cloud/firestore'
+import { CollectionReference, FieldPath } from '@google-cloud/firestore'
 import { KeyValueCache } from 'apollo-server-caching'
 import DataLoader from 'dataloader'
 import { FirestoreDataSourceOptions } from './datasource'
@@ -60,22 +60,13 @@ export const createCachingMethods = <DType extends { id: string }>({
   options
 }: createCatchingMethodArgs<DType>): CachedMethods<DType> => {
   const loader = new DataLoader<string, DType>(async (ids) => {
-    const qSnaps: Array<Promise<QuerySnapshot<DType>>> = []
-    // the 'in' operator only supports up to 10 values at a time
-    for (let idx = 0; idx < ids.length; idx += 10) {
-      const idSlice = ids.slice(idx, idx + 10)
-      options?.logger?.debug(
-        `FirestoreDataSource/DataLoader: loading for IDs: ${idSlice}`
-      )
-      qSnaps.push(collection.where(FieldPath.documentId(), 'in', idSlice).get())
-    }
-    const documents = (await Promise.all(qSnaps)).flatMap(qSnap => qSnap.docs).map(dSnap => dSnap.exists ? dSnap.data() : undefined)
-    options?.logger?.debug(
-      `FirestoreDataSource/DataLoader: response count: ${documents.length}`
-    )
+    options?.logger?.debug(`FirestoreDataSource/DataLoader: loading for IDs: ${ids}`)
+    const qSnap = await collection.where(FieldPath.documentId(), 'in', ids).get()
+    const documents = qSnap.docs.map(dSnap => dSnap.exists ? dSnap.data() : undefined)
+    options?.logger?.debug(`FirestoreDataSource/DataLoader: response count: ${documents.length}`)
 
     return orderDocs<DType>(ids)(documents)
-  })
+  }, { maxBatchSize: 10 })
 
   const reviver = reviverFactory(collection)
 
