@@ -45,8 +45,8 @@ describe('FirestoreDataSource', () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _ = new UserDataSource(firestore as any as CollectionReference<UserDoc>)
     }, err => {
-      assert.strictEqual(err.name, 'Error')
-      assert.strictEqual(err.message, 'FirestoreDataSource must be created with a Firestore collection (from @google-cloud/firestore)')
+      assert.strictEqual((err as TypeError).name, 'Error')
+      assert.strictEqual((err as TypeError).message, 'FirestoreDataSource must be created with a Firestore collection (from @google-cloud/firestore)')
       return true
     })
   })
@@ -57,8 +57,8 @@ describe('FirestoreDataSource', () => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       uninitialised.findOneById('a') // this isn't a promise
     }, err => {
-      assert.strictEqual(err.name, 'Error')
-      assert.strictEqual(err.message, 'DataSource not initialized')
+      assert.strictEqual((err as Error).name, 'Error')
+      assert.strictEqual((err as Error).message, 'DataSource not initialized')
       return true
     })
   })
@@ -247,7 +247,7 @@ describe('FirestoreDataSource', () => {
       const foundAgain = await userSource.findOneById(createdOne.id, { ttl: 1000 })
 
       assert.deepStrictEqual(foundOne, foundAgain)
-      assert.ok(foundAgain.createdAt instanceof Timestamp)
+      assert.ok(foundAgain!.createdAt instanceof Timestamp)
     })
 
     it('Should serialize and de-serialize Firestore GeoPoints', async () => {
@@ -264,7 +264,7 @@ describe('FirestoreDataSource', () => {
       const foundAgain = await userSource.findOneById(createdOne.id, { ttl: 1000 })
 
       assert.deepStrictEqual(foundOne, foundAgain)
-      assert.ok(foundAgain.locatedAt instanceof GeoPoint)
+      assert.ok(foundAgain!.locatedAt instanceof GeoPoint)
     })
 
     it('Should serialize and de-serialize Firestore DocumentReferences', async () => {
@@ -281,7 +281,7 @@ describe('FirestoreDataSource', () => {
       const foundAgain = await userSource.findOneById(createdOne.id, { ttl: 1000 })
 
       assert.deepStrictEqual(foundOne, foundAgain)
-      assert.ok(foundAgain.documentRef instanceof DocumentReference)
+      assert.ok(foundAgain!.documentRef instanceof DocumentReference)
     })
   })
 
@@ -304,16 +304,16 @@ describe('FirestoreDataSource', () => {
     })
 
     it('Should find more than 10 documents by ID', async () => {
-      const createPromises: Array<Promise<UserDoc>> = []
+      const createPromises: Array<Promise<UserDoc | undefined>> = []
       for (let idx = 0; idx < 23; idx++) {
         createPromises.push(userSource.createOne({
           email: `hello${idx}@test.com`
         }))
       }
       const created = await Promise.all(createPromises)
-      await Promise.all(created.map(c => userSource.deleteFromCacheById(c.id))) // eslint-disable-line @typescript-eslint/promise-function-async
+      await Promise.all(created.map(c => userSource.deleteFromCacheById(c!.id))) // eslint-disable-line @typescript-eslint/promise-function-async
 
-      const foundOnes = await userSource.findManyByIds(created.map(u => u.id))
+      const foundOnes = await userSource.findManyByIds(created.map(u => u!.id))
 
       assert.deepStrictEqual(foundOnes, created)
     })
