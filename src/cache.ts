@@ -52,6 +52,9 @@ export interface CachedMethods<DType> {
   cache?: KeyValueCache
   cachePrefix?: string
   primeLoader: (item: DType | DType[], ttl?: number) => void
+
+  reviver: (key: string | number, value: any) => any
+  replacer: (key: string | number, value: any) => string
 }
 
 export const createCachingMethods = <DType extends { id: string }>({
@@ -97,6 +100,7 @@ export const createCachingMethods = <DType extends { id: string }>({
     },
 
     deleteFromCacheById: async (id) => {
+      options?.logger?.debug(`FirestoreDataSource: Deleting from cache ${id}`)
       loader.clear(id)
       await cache.delete(cachePrefix + id)
     },
@@ -117,7 +121,9 @@ export const createCachingMethods = <DType extends { id: string }>({
     },
     dataLoader: loader,
     cache,
-    cachePrefix
+    cachePrefix,
+    reviver,
+    replacer
   }
 
   return methods

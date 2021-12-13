@@ -32,6 +32,9 @@ export class FirestoreDataSource<TData extends { readonly id: string, readonly c
   cache: CachedMethods<TData>['cache']
   cachePrefix: CachedMethods<TData>['cachePrefix']
 
+  reviver = placeholderHandler
+  replacer = placeholderHandler
+
   /**
    *
    * @param query
@@ -47,9 +50,7 @@ export class FirestoreDataSource<TData extends { readonly id: string, readonly c
     if (this.dataLoader && results) {
       this.primeLoader(results, ttl)
     }
-    this.options?.logger?.info(
-      `FirestoreDataSource/findManyByQuery: complete. rows: ${qSnap.size}, Read Time: ${qSnap.readTime.toDate()}`
-    )
+    this.options?.logger?.debug(`FirestoreDataSource/findManyByQuery: complete. rows: ${qSnap.size}, Read Time: ${qSnap.readTime.toDate()}`)
     return results
   }
 
@@ -63,20 +64,20 @@ export class FirestoreDataSource<TData extends { readonly id: string, readonly c
       if (result) {
         this.primeLoader(result, ttl)
       }
+      this.options?.logger?.debug(`FirestoreDataSource/createOne: created id: ${result?.id ?? ''}`)
       return result
     }
   }
 
   async deleteOne (id: string) {
-    this.options?.logger?.info(
-      `FirestoreDataSource/deleteOne: deleting id: '${id}'`
-    )
+    this.options?.logger?.debug(`FirestoreDataSource/deleteOne: deleting id: '${id}'`)
     const response = await this.collection.doc(id).delete()
     await this.deleteFromCacheById(id)
     return response
   }
 
   async updateOne (data: TData) {
+    this.options?.logger?.debug(`FirestoreDataSource/updateOne: Updating doc id ${data.id}`)
     await this.collection
       .doc(data.id)
       .set(data)
@@ -90,9 +91,7 @@ export class FirestoreDataSource<TData extends { readonly id: string, readonly c
   }
 
   async updateOnePartial (id: string, data: Partial<TData>) {
-    this.options?.logger?.debug(
-      `FirestoreDataSource/updateOnePartial: Updating doc id ${id} contents: ${JSON.stringify(data, null, '')}`
-    )
+    this.options?.logger?.debug(`FirestoreDataSource/updateOnePartial: Updating doc id ${id}`)
     await this.collection
       .doc(id)
       .set(data, { merge: true })
@@ -107,12 +106,10 @@ export class FirestoreDataSource<TData extends { readonly id: string, readonly c
 
   constructor (collection: CollectionReference<TData>, options: FirestoreDataSourceOptions = {}) {
     super()
-    options?.logger?.info('FirestoreDataSource started')
+    options?.logger?.debug('FirestoreDataSource started')
 
     if (!isFirestoreCollection(collection)) {
-      throw new ApolloError(
-        'FirestoreDataSource must be created with a Firestore collection (from @google-cloud/firestore)'
-      )
+      throw new ApolloError('FirestoreDataSource must be created with a Firestore collection (from @google-cloud/firestore)')
     }
 
     this.options = options
