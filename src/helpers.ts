@@ -1,4 +1,4 @@
-import { CollectionReference, DocumentReference, FirestoreDataConverter, GeoPoint, Timestamp, WithFieldValue } from '@google-cloud/firestore'
+import { CollectionReference, DocumentReference, FirestoreDataConverter, GeoPoint, PartialWithFieldValue, Timestamp } from '@google-cloud/firestore'
 
 export const isFirestoreCollection = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -12,8 +12,13 @@ export const isFirestoreCollection = (
   )
 }
 
-export const FirestoreConverter = <TData extends { readonly id: string, readonly collection: string }>(): FirestoreDataConverter<TData> => ({
-  toFirestore: ({ id, collection, ...data }: WithFieldValue<TData>) => data,
+export interface LibraryFields {
+  readonly id: string
+  readonly collection: string
+}
+
+export const FirestoreConverter = <TData extends LibraryFields>(): FirestoreDataConverter<TData> => ({
+  toFirestore: ({ id, collection, ...data }: PartialWithFieldValue<TData>) => data,
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   fromFirestore: (snap: FirebaseFirestore.QueryDocumentSnapshot) => ({ id: snap.id, collection: snap.ref.parent.id, ...snap.data() }) as TData
 })

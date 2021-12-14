@@ -1,9 +1,9 @@
 import { DataSource } from 'apollo-datasource'
 import { ApolloError } from 'apollo-server-errors'
 import { InMemoryLRUCache, KeyValueCache } from 'apollo-server-caching'
-import type { CollectionReference, Query } from '@google-cloud/firestore'
+import type { CollectionReference, PartialWithFieldValue, Query, WithFieldValue } from '@google-cloud/firestore'
 
-import { Logger, isFirestoreCollection, FirestoreConverter } from './helpers'
+import { Logger, isFirestoreCollection, FirestoreConverter, LibraryFields } from './helpers'
 import { createCachingMethods, CachedMethods, FindArgs } from './cache'
 
 export interface FirestoreDataSourceOptions {
@@ -16,7 +16,7 @@ const placeholderHandler = () => {
 
 export type QueryFindArgs = FindArgs
 
-export class FirestoreDataSource<TData extends { readonly id: string, readonly collection: string }, TContext>
+export class FirestoreDataSource<TData extends LibraryFields, TContext>
   extends DataSource<TContext>
   implements CachedMethods<TData> {
   collection: CollectionReference<TData>
@@ -54,7 +54,7 @@ export class FirestoreDataSource<TData extends { readonly id: string, readonly c
     return results
   }
 
-  async createOne (newDoc: TData | Omit<TData, 'id' | 'collection'>, { ttl }: QueryFindArgs = {}) {
+  async createOne (newDoc: (WithFieldValue<TData> & LibraryFields) | Omit<WithFieldValue<TData>, 'id' | 'collection'>, { ttl }: QueryFindArgs = {}) {
     if ('id' in newDoc) {
       return await this.updateOne(newDoc)
     } else {
@@ -76,7 +76,7 @@ export class FirestoreDataSource<TData extends { readonly id: string, readonly c
     return response
   }
 
-  async updateOne (data: TData) {
+  async updateOne (data: WithFieldValue<TData> & LibraryFields) {
     this.options?.logger?.debug(`FirestoreDataSource/updateOne: Updating doc id ${data.id}`)
     await this.collection
       .doc(data.id)
@@ -90,7 +90,7 @@ export class FirestoreDataSource<TData extends { readonly id: string, readonly c
     return result
   }
 
-  async updateOnePartial (id: string, data: Partial<TData>) {
+  async updateOnePartial (id: string, data: PartialWithFieldValue<TData>) {
     this.options?.logger?.debug(`FirestoreDataSource/updateOnePartial: Updating doc id ${id}`)
     await this.collection
       .doc(id)

@@ -13,9 +13,7 @@ const orderDocs = <V>(ids: readonly string[]) => (
     keyFn ??
     ((source: V & { id?: string }) => {
       if (source.id) return source.id
-      throw new Error(
-        'Could not find ID for object; if using an alternate key, pass in a key function'
-      )
+      throw new Error('Could not find ID for object; if using an alternate key, pass in a key function')
     })
 
   const checkNotUndefined = (input: V | undefined): input is V => {

@@ -1,5 +1,5 @@
 /* eslint-env mocha */
-import { CollectionReference, DocumentReference, Firestore, GeoPoint, Timestamp } from '@google-cloud/firestore'
+import { CollectionReference, DocumentReference, FieldValue, Firestore, GeoPoint, Timestamp } from '@google-cloud/firestore'
 import fetch from 'node-fetch'
 import assert from 'assert'
 
@@ -72,6 +72,19 @@ describe('FirestoreDataSource', () => {
       assert.deepStrictEqual(data, newUser)
       assert.strictEqual(collection, USERS_COLLECTION_NAME)
       assert.notStrictEqual(id, undefined)
+      assert.strictEqual(typeof id, 'string')
+    })
+
+    it('Should create a doc with a field value and return it', async () => {
+      const newUser = {
+        email: 'hello@test.com',
+        createdAt: FieldValue.serverTimestamp()
+      }
+      const { id, collection, createdAt, ...data } = await userSource.createOne(newUser) as UserDoc
+      assert.deepStrictEqual(data, { email: newUser.email })
+      assert.strictEqual(collection, USERS_COLLECTION_NAME)
+      assert.notStrictEqual(id, undefined)
+      assert.notStrictEqual(createdAt, undefined)
       assert.strictEqual(typeof id, 'string')
     })
 
