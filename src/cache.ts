@@ -79,7 +79,7 @@ export const createCachingMethods = <DType extends { id: string }>({
       const key = cachePrefix + id
 
       const cacheDoc = await cache.get(key)
-      if (cacheDoc) {
+      if (cacheDoc && ttl) {
         return JSON.parse(cacheDoc, reviver) as DType
       }
 
