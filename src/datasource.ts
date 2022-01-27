@@ -1,5 +1,4 @@
 import { DataSource } from 'apollo-datasource'
-import { ApolloError } from 'apollo-server-errors'
 import { InMemoryLRUCache, KeyValueCache } from 'apollo-server-caching'
 import type { CollectionReference, PartialWithFieldValue, Query, WithFieldValue } from '@google-cloud/firestore'
 
@@ -109,7 +108,7 @@ export class FirestoreDataSource<TData extends LibraryFields, TContext>
     options?.logger?.debug('FirestoreDataSource started')
 
     if (!isFirestoreCollection(collection)) {
-      throw new ApolloError('FirestoreDataSource must be created with a Firestore collection (from @google-cloud/firestore)')
+      throw new Error('FirestoreDataSource must be created with a Firestore collection (from @google-cloud/firestore)')
     }
 
     this.options = options
