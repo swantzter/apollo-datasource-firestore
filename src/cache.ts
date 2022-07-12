@@ -49,7 +49,7 @@ export interface CachedMethods<DType> {
   dataLoader?: DataLoader<string, DType, string>
   cache?: KeyValueCache
   cachePrefix?: string
-  primeLoader: (item: DType | DType[], ttl?: number) => void
+  primeLoader: (item: DType | DType[], ttl?: number) => void | Promise<void>
 
   reviver: (key: string | number, value: any) => any
   replacer: (key: string | number, value: any) => string

@@ -47,7 +47,7 @@ export class FirestoreDataSource<TData extends LibraryFields, TContext>
     const results = qSnap.docs.map(dSnap => dSnap.data())
     // prime these into the dataloader and maybe the cache
     if (this.dataLoader && results) {
-      this.primeLoader(results, ttl)
+      await this.primeLoader(results, ttl)
     }
     this.options?.logger?.debug(`FirestoreDataSource/findManyByQuery: complete. rows: ${qSnap.size}, Read Time: ${qSnap.readTime.toDate()}`)
     return results
@@ -61,7 +61,7 @@ export class FirestoreDataSource<TData extends LibraryFields, TContext>
       const dSnap = await dRef.get()
       const result = dSnap.data()
       if (result) {
-        this.primeLoader(result, ttl)
+        await this.primeLoader(result, ttl)
       }
       this.options?.logger?.debug(`FirestoreDataSource/createOne: created id: ${result?.id ?? ''}`)
       return result
@@ -84,7 +84,7 @@ export class FirestoreDataSource<TData extends LibraryFields, TContext>
     const dSnap = await this.collection.doc(data.id).get()
     const result = dSnap.data()
     if (result) {
-      this.primeLoader(result)
+      await this.primeLoader(result)
     }
     return result
   }
@@ -98,7 +98,7 @@ export class FirestoreDataSource<TData extends LibraryFields, TContext>
     const dSnap = await this.collection.doc(id).get()
     const result = dSnap.data()
     if (result) {
-      this.primeLoader(result)
+      await this.primeLoader(result)
     }
     return result
   }
