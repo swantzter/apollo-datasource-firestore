@@ -12,19 +12,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - uses: actions/checkout@v3
+      - name: Use Node.js 16
+        uses: actions/setup-node@v3
         with:
-          path: |
-            ~/.npm
-            ~/.cache/firebase/emulators/
-          key: ${{ runner.os }}-firestore-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-firestore-
-      - name: Use Node.js 14
-        uses: actions/setup-node@v1
-        with:
-          node-version: 14
+          node-version: 16
+          cache: npm
       - uses: actions/setup-java@v2
         with:
           distribution: "adopt" # See 'Supported distributions' for available options
@@ -36,16 +29,11 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 14
+          node-version: 16
+          cache: npm
           registry-url: https://registry.npmjs.org/
       - run: npm ci --prefer-offline
       - run: npm publish
@@ -56,16 +44,11 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 14
+          node-version: 16
+          cache: npm
           registry-url: https://npm.pkg.github.com/
       - run: npm ci --prefer-offline
       - run: sed -i 's,"apollo-datasource-firestore","@swantzter/apollo-datasource-firestore",' package*.json
