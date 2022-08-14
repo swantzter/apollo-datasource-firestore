@@ -7,6 +7,12 @@
 
 This is a Firestore DataSource for Apollo GraphQL Servers. It was adapted from the [CosmosDB DataSource](https://github.com/andrejpk/apollo-datasource-cosmosdb)
 
+## Install
+
+```
+npm i apollo-datasource-firestore
+```
+
 ## Usage
 
 Use by creating a new class extending the `FirestoreDataSource`, with the desired document type.
@@ -15,9 +21,13 @@ different collections in Firestore too. Initialise the class
 by passing a collection reference created by the Firestore library.
 
 ```typescript
-export interface UserDoc {
-  // a string id value is required for entities using this library.
-  // It will be used for the firestore document ID but not stored in the document in firestore.
+import { FirestoreDataSource } from 'apollo-datasource-firestore';
+
+export interface UsersDoc {
+  /**
+   * A string id value is required for entities using this library.
+   * It will be used for the firestore document ID but not stored in the document in firestore.
+   */
   readonly id: string
   readonly collection: 'users'
   name: string
@@ -30,17 +40,17 @@ export interface PostsDoc {
   title: string
 }
 
-export class UserDataSource extends FirestoreDataStore<UserDoc, ApolloContext> {}
-export class PostsDataSource extends FirestoreDataStore<PostsDoc, ApolloContext> {}
+export class UsersDataSource extends FirestoreDataSource<UsersDoc, ApolloContext> {}
+export class PostsDataSource extends FirestoreDataSource<PostsDoc, ApolloContext> {}
 
-const usersCollection: CollectionReference<UserDoc> = firestore.collection('users')
+const usersCollection: CollectionReference<UsersDoc> = firestore.collection('users')
 const postsCollection: CollectionReference<PostsDoc> = firestore.collection('posts')
 
 const server = new ApolloServer({
   typeDefs,
   resolvers,
   dataSources: () => ({
-    users: new UserDataSource(usersCollection),
+    users: new UsersDataSource(usersCollection),
     posts: new PostsDataSource(postsCollection)
   })
 })
@@ -48,12 +58,12 @@ const server = new ApolloServer({
 
 ## Custom queries
 
-FirestoreDataSource has a `findByQuery` method that accepts a function taking the collection as its only argument, which you can then create a query based on. Can be used in resolvers or to create wrappers.
+`FirestoreDataSource` has a `findByQuery` method that accepts a function taking the collection as its only argument, which you can then create a query based on. Can be used in resolvers or to create wrappers.
 
 Example of derived class with custom query methods:
 
 ```typescript
-export class UserDataSource extends FirestoreDataStore<UserDoc, ApolloContext> {
+export class UsersDataSource extends FirestoreDataSource<UsersDoc, ApolloContext> {
   async findManyByGroupId (groupId: number) {
     return this.findManyByQuery(c => c.where('groupId', '==', groupId).limit(2))
   }
