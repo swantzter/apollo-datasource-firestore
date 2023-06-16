@@ -12,9 +12,10 @@ const usersCollection = firestore.collection(USERS_COLLECTION_NAME)
 interface UserDoc {
   readonly id: string
   readonly collection: string
+  readonly createdAt: Timestamp
+  readonly updatedAt: Timestamp
   email: string
   name?: string
-  createdAt?: Timestamp
   locatedAt?: GeoPoint
   documentRef?: DocumentReference
   collectionRef?: CollectionReference
@@ -51,10 +52,12 @@ describe('FirestoreDataSource', () => {
       const newUser = {
         email: 'hello@test.com'
       }
-      const { id, collection, ...data } = await userSource.createOne(newUser) as UserDoc
+      const { id, collection, createdAt, updatedAt, ...data } = await userSource.createOne(newUser) as UserDoc
       assert.deepStrictEqual(data, newUser)
       assert.strictEqual(collection, USERS_COLLECTION_NAME)
       assert.notStrictEqual(id, undefined)
+      assert.ok(createdAt instanceof Timestamp)
+      assert.ok(updatedAt instanceof Timestamp)
       assert.strictEqual(typeof id, 'string')
     })
 
@@ -63,11 +66,12 @@ describe('FirestoreDataSource', () => {
         email: 'hello@test.com',
         createdAt: FieldValue.serverTimestamp()
       }
-      const { id, collection, createdAt, ...data } = await userSource.createOne(newUser) as UserDoc
+      const { id, collection, createdAt, updatedAt, ...data } = await userSource.createOne(newUser) as UserDoc
       assert.deepStrictEqual(data, { email: newUser.email })
       assert.strictEqual(collection, USERS_COLLECTION_NAME)
       assert.notStrictEqual(id, undefined)
-      assert.notStrictEqual(createdAt, undefined)
+      assert.ok(createdAt instanceof Timestamp)
+      assert.ok(updatedAt instanceof Timestamp)
       assert.strictEqual(typeof id, 'string')
     })
 
@@ -76,7 +80,7 @@ describe('FirestoreDataSource', () => {
         id: 'amazingUser',
         email: 'hello123@test.com'
       }
-      const { collection, ...created } = await userSource.createOne(newUser) as UserDoc
+      const { collection, createdAt, updatedAt, ...created } = await userSource.createOne(newUser) as UserDoc
 
       const dSnap = await usersCollection.doc(created.id).get()
 
@@ -86,7 +90,7 @@ describe('FirestoreDataSource', () => {
     })
 
     it('Should not store the id or collection as a field in the db', async () => {
-      const { id, collection, ...data } = await userSource.createOne({
+      const { id, collection, createdAt, updatedAt, ...data } = await userSource.createOne({
         email: 'hello2@test.com'
       }) as UserDoc
       const dSnap = await usersCollection.doc(id).get()
@@ -97,14 +101,16 @@ describe('FirestoreDataSource', () => {
 
   describe('updateOne', () => {
     it('Should update a doc', async () => {
-      const { id: createdId, ...created } = await userSource.createOne({
+      const { id: createdId, createdAt: createdCreatedAt, updatedAt: createdUpdatedAt, ...created } = await userSource.createOne({
         email: 'hello@test.com'
       }) as UserDoc
 
-      const { id: updatedId, ...updated } = await userSource.updateOne({ id: createdId, ...created, name: 'Test' }) as UserDoc
+      const { id: updatedId, createdAt: updatedCreatedAt, updatedAt: updatedUpdatedAt, ...updated } = await userSource.updateOne({ id: createdId, ...created, name: 'Test' }) as UserDoc
 
       assert.strictEqual(updatedId, createdId)
       assert.notDeepStrictEqual(updated, created)
+      assert.deepStrictEqual(createdCreatedAt, updatedCreatedAt)
+      assert.notDeepStrictEqual(createdUpdatedAt, updatedUpdatedAt)
     })
   })
 
@@ -117,12 +123,14 @@ describe('FirestoreDataSource', () => {
         name: 'Testson'
       }
 
-      const { id: createdId, collection: newCollection } = await userSource.createOne(createData) as UserDoc
-      const { id: updatedId, collection: updatedCollection, ...updated } = await userSource.updateOnePartial(createdId, updateData) as UserDoc
+      const { id: createdId, collection: newCollection, createdAt: createdCreatedAt, updatedAt: createdUpdatedAt } = await userSource.createOne(createData) as UserDoc
+      const { id: updatedId, collection: updatedCollection, createdAt: updatedCreatedAt, updatedAt: updatedUpdatedAt, ...updated } = await userSource.updateOnePartial(createdId, updateData) as UserDoc
 
       assert.strictEqual(updatedId, createdId)
       assert.strictEqual(newCollection, updatedCollection)
       assert.deepStrictEqual(updated, { ...createData, ...updateData })
+      assert.deepStrictEqual(createdCreatedAt, updatedCreatedAt)
+      assert.notDeepStrictEqual(createdUpdatedAt, updatedUpdatedAt)
     })
 
     it('Partial update should update cache', async () => {
@@ -133,14 +141,18 @@ describe('FirestoreDataSource', () => {
         name: 'Testson'
       }
 
-      const { id: createdId, collection: newCollection, ...created } = await userSource.createOne(createData, { ttl: 60 }) as UserDoc
-      const { id: updatedId } = await userSource.updateOnePartial(createdId, updateData) as UserDoc
-      const { id: refetchedId, collection: refetchedCollection, ...refetched } = await userSource.findOneById(createdId, { ttl: 60 }) as UserDoc
+      const { id: createdId, collection: newCollection, createdAt: createdCreatedAt, updatedAt: createdUpdatedAt, ...created } = await userSource.createOne(createData, { ttl: 60 }) as UserDoc
+      const { id: updatedId, createdAt: updatedCreatedAt, updatedAt: updatedUpdatedAt } = await userSource.updateOnePartial(createdId, updateData) as UserDoc
+      const { id: refetchedId, collection: refetchedCollection, createdAt: refetchCreatedAt, updatedAt: refetchUpdatedAt, ...refetched } = await userSource.findOneById(createdId, { ttl: 60 }) as UserDoc
 
       assert.strictEqual(updatedId, refetchedId)
       assert.strictEqual(newCollection, refetchedCollection)
       assert.deepStrictEqual(refetched, { ...createData, ...updateData })
       assert.notDeepStrictEqual(created, refetched)
+      assert.deepStrictEqual(createdCreatedAt, updatedCreatedAt)
+      assert.deepStrictEqual(createdCreatedAt, refetchCreatedAt)
+      assert.notDeepStrictEqual(createdUpdatedAt, updatedUpdatedAt)
+      assert.deepStrictEqual(updatedUpdatedAt, refetchUpdatedAt)
     })
 
     it('Partial update should not be able to change the ID', async () => {
@@ -152,7 +164,7 @@ describe('FirestoreDataSource', () => {
       }
 
       const { id: createdId, collection: newCollection } = await userSource.createOne(createData) as UserDoc
-      const { id: updatedId, collection: updatedCollection, ...updated } = await userSource.updateOnePartial(createdId, { id: 'attemptedNewId', ...updateData }) as UserDoc
+      const { id: updatedId, collection: updatedCollection, createdAt, updatedAt, ...updated } = await userSource.updateOnePartial(createdId, { id: 'attemptedNewId', ...updateData }) as UserDoc
 
       const dSnap = await usersCollection.doc('attemptedNewId').get()
       assert.strictEqual(dSnap.exists, false)
@@ -171,7 +183,7 @@ describe('FirestoreDataSource', () => {
       }
 
       const { id: createdId, collection: newCollection } = await userSource.createOne(createData) as UserDoc
-      const { id: updatedId, collection: updatedCollection, ...updated } = await userSource.updateOnePartial(createdId, { collection: 'newCollection', ...updateData }) as UserDoc
+      const { id: updatedId, collection: updatedCollection, createdAt, updatedAt, ...updated } = await userSource.updateOnePartial(createdId, { collection: 'newCollection', ...updateData }) as UserDoc
 
       const dSnap = await firestore.collection('newCollection').doc(createdId).get()
       assert.strictEqual(dSnap.exists, false)
@@ -179,6 +191,24 @@ describe('FirestoreDataSource', () => {
       assert.strictEqual(updatedId, createdId)
       assert.strictEqual(newCollection, updatedCollection)
       assert.deepStrictEqual(updated, { ...createData, ...updateData })
+    })
+
+    it('Partial update should not be able to change the createdAt date', async () => {
+      const createData = {
+        email: 'hello3@test.com'
+      }
+      const updateData = {
+        name: 'Testson'
+      }
+
+      const { id: createdId, createdAt: createdCreatedAt } = await userSource.createOne(createData) as UserDoc
+      const { id: updatedId, createdAt: updatedCreatedAt } = await userSource.updateOnePartial(createdId, { createdAt: Timestamp.now(), ...updateData }) as UserDoc
+
+      const dSnap = await firestore.collection('newCollection').doc(createdId).get()
+      assert.strictEqual(dSnap.exists, false)
+
+      assert.strictEqual(updatedId, createdId)
+      assert.deepStrictEqual(createdCreatedAt, updatedCreatedAt)
     })
   })
 
@@ -211,7 +241,7 @@ describe('FirestoreDataSource', () => {
 
       const foundOne = await userSource.findOneById(dRefOne.id)
 
-      assert.deepStrictEqual(foundOne, { id: dRefOne.id, collection: dRefOne.parent.id, ...dSnapOne.data() })
+      assert.deepStrictEqual(foundOne, { ...dSnapOne.data(), id: dRefOne.id, collection: dRefOne.parent.id, createdAt: dSnapOne.createTime, updatedAt: dSnapOne.updateTime })
     })
 
     it('Should cache a found doc', async () => {

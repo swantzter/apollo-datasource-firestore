@@ -15,12 +15,20 @@ export const isFirestoreCollection = (
 export interface LibraryFields {
   readonly id: string
   readonly collection: string
+  readonly createdAt: Timestamp
+  readonly updatedAt: Timestamp
 }
 
 export const FirestoreConverter = <TData extends LibraryFields>(): FirestoreDataConverter<TData> => ({
-  toFirestore: ({ id, collection, ...data }: PartialWithFieldValue<TData>) => data,
+  toFirestore: ({ id, collection, createdAt, updatedAt, ...data }: PartialWithFieldValue<TData>) => data,
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  fromFirestore: (snap: FirebaseFirestore.QueryDocumentSnapshot) => ({ id: snap.id, collection: snap.ref.parent.id, ...snap.data() }) as TData
+  fromFirestore: (snap: FirebaseFirestore.QueryDocumentSnapshot) => ({
+    ...snap.data(),
+    id: snap.id,
+    collection: snap.ref.parent.id,
+    createdAt: snap.createTime,
+    updatedAt: snap.updateTime
+  }) as TData
 })
 
 export interface Logger {
