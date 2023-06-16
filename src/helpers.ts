@@ -1,4 +1,4 @@
-import { CollectionReference, DocumentReference, FirestoreDataConverter, GeoPoint, PartialWithFieldValue, Timestamp } from '@google-cloud/firestore'
+import { type CollectionReference, DocumentReference, type FirestoreDataConverter, GeoPoint, type PartialWithFieldValue, Timestamp } from '@google-cloud/firestore'
 
 export const isFirestoreCollection = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

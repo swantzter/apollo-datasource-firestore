@@ -31,27 +31,26 @@
   },
   "homepage": "https://github.com/swantzter/apollo-datasource-firestore#readme",
   "devDependencies": {
-    "@google-cloud/firestore": "^6.0.0",
-    "@types/mocha": "^9.0.0",
-    "@types/node": "^16.11.7",
-    "@types/node-fetch": "^2.5.12",
-    "c8": "^7.12.0",
-    "eslint": "^8.19.0",
-    "eslint-config-standard-with-typescript": "^22.0.0",
-    "firebase-tools": "^11.2.1",
-    "graphql": "^16.0.1",
-    "mocha": "^10.0.0",
-    "node-fetch": "^2.6.7",
-    "ts-node": "^10.4.0",
-    "typescript": "^4.7.4"
+    "@google-cloud/firestore": "^6.6.1",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^20.3.1",
+    "@types/node-fetch": "^2.6.4",
+    "c8": "^8.0.0",
+    "eslint": "^8.43.0",
+    "eslint-config-standard-with-typescript": "^35.0.0",
+    "firebase-tools": "^12.4.0",
+    "graphql": "^16.6.0",
+    "mocha": "^10.2.0",
+    "ts-node": "^10.9.1",
+    "typescript": "5.0",
+    "undici": "^5.22.1"
   },
   "peerDependencies": {
     "@google-cloud/firestore": "^5 || ^6"
   },
   "dependencies": {
-    "apollo-datasource": "^3.3.0",
-    "apollo-server-caching": "^3.3.0",
-    "dataloader": "^2.0.0"
+    "@apollo/utils.keyvaluecache": "^3.0.0",
+    "dataloader": "^2.2.2"
   },
   "files": [
     "/dist"

@@ -1,12 +1,12 @@
-import { DataSource } from 'apollo-datasource'
-import { InMemoryLRUCache, KeyValueCache } from 'apollo-server-caching'
+import { InMemoryLRUCache, type KeyValueCache } from '@apollo/utils.keyvaluecache'
 import type { CollectionReference, PartialWithFieldValue, Query, WithFieldValue } from '@google-cloud/firestore'
 
-import { Logger, isFirestoreCollection, FirestoreConverter, LibraryFields } from './helpers'
-import { createCachingMethods, CachedMethods, FindArgs } from './cache'
+import { type Logger, isFirestoreCollection, FirestoreConverter, type LibraryFields } from './helpers'
+import { createCachingMethods, type CachedMethods, type FindArgs } from './cache'
 
 export interface FirestoreDataSourceOptions {
   logger?: Logger
+  cache?: KeyValueCache
 }
 
 const placeholderHandler = () => {
@@ -15,12 +15,9 @@ const placeholderHandler = () => {
 
 export type QueryFindArgs = FindArgs
 
-export class FirestoreDataSource<TData extends LibraryFields, TContext>
-  extends DataSource<TContext>
-  implements CachedMethods<TData> {
+export class FirestoreDataSource<TData extends LibraryFields> implements CachedMethods<TData> {
   collection: CollectionReference<TData>
-  context?: TContext
-  options: FirestoreDataSourceOptions
+  logger?: Logger
   // these get set by the initializer but they must be defined or nullable after the constructor
   // runs, so we guard against using them before init
   findOneById: CachedMethods<TData>['findOneById'] = placeholderHandler
@@ -49,7 +46,7 @@ export class FirestoreDataSource<TData extends LibraryFields, TContext>
     if (this.dataLoader && results) {
       await this.primeLoader(results, ttl)
     }
-    this.options?.logger?.debug(`FirestoreDataSource/findManyByQuery: complete. rows: ${qSnap.size}, Read Time: ${qSnap.readTime.toDate()}`)
+    this.logger?.debug(`FirestoreDataSource/findManyByQuery: complete. rows: ${qSnap.size}, Read Time: ${qSnap.readTime.toDate()}`)
     return results
   }
 
@@ -63,20 +60,20 @@ export class FirestoreDataSource<TData extends LibraryFields, TContext>
       if (result) {
         await this.primeLoader(result, ttl)
       }
-      this.options?.logger?.debug(`FirestoreDataSource/createOne: created id: ${result?.id ?? ''}`)
+      this.logger?.debug(`FirestoreDataSource/createOne: created id: ${result?.id ?? ''}`)
       return result
     }
   }
 
   async deleteOne (id: string) {
-    this.options?.logger?.debug(`FirestoreDataSource/deleteOne: deleting id: '${id}'`)
+    this.logger?.debug(`FirestoreDataSource/deleteOne: deleting id: '${id}'`)
     const response = await this.collection.doc(id).delete()
     await this.deleteFromCacheById(id)
     return response
   }
 
   async updateOne (data: WithFieldValue<TData> & LibraryFields) {
-    this.options?.logger?.debug(`FirestoreDataSource/updateOne: Updating doc id ${data.id}`)
+    this.logger?.debug(`FirestoreDataSource/updateOne: Updating doc id ${data.id}`)
     await this.collection
       .doc(data.id)
       .set(data)
@@ -90,7 +87,7 @@ export class FirestoreDataSource<TData extends LibraryFields, TContext>
   }
 
   async updateOnePartial (id: string, data: PartialWithFieldValue<TData>) {
-    this.options?.logger?.debug(`FirestoreDataSource/updateOnePartial: Updating doc id ${id}`)
+    this.logger?.debug(`FirestoreDataSource/updateOnePartial: Updating doc id ${id}`)
     await this.collection
       .doc(id)
       .set(data, { merge: true })
@@ -103,28 +100,21 @@ export class FirestoreDataSource<TData extends LibraryFields, TContext>
     return result
   }
 
-  constructor (collection: CollectionReference<TData>, options: FirestoreDataSourceOptions = {}) {
-    super()
+  constructor (collection: CollectionReference<TData>, options?: FirestoreDataSourceOptions) {
     options?.logger?.debug('FirestoreDataSource started')
 
     if (!isFirestoreCollection(collection)) {
       throw new Error('FirestoreDataSource must be created with a Firestore collection (from @google-cloud/firestore)')
     }
 
-    this.options = options
+    this.cache = options?.cache ?? new InMemoryLRUCache()
+    this.logger = options?.logger
     this.collection = collection.withConverter(FirestoreConverter<TData>())
-  }
-
-  initialize ({
-    context,
-    cache
-  }: { context?: TContext, cache?: KeyValueCache } = {}) {
-    this.context = context
 
     const methods = createCachingMethods<TData>({
       collection: this.collection,
-      cache: cache ?? new InMemoryLRUCache(),
-      options: this.options
+      cache: this.cache,
+      options
     })
 
     Object.assign(this, methods)

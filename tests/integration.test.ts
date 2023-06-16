@@ -1,6 +1,6 @@
 /* eslint-env mocha */
-import { CollectionReference, DocumentReference, FieldValue, Firestore, GeoPoint, Timestamp } from '@google-cloud/firestore'
-import fetch from 'node-fetch'
+import { type CollectionReference, DocumentReference, FieldValue, Firestore, GeoPoint, Timestamp } from '@google-cloud/firestore'
+import { fetch } from 'undici'
 import assert from 'assert'
 
 import { FirestoreDataSource } from '../src'
@@ -20,18 +20,13 @@ interface UserDoc {
   collectionRef?: CollectionReference
 }
 
-interface Context {
-  example?: string
-}
-
-class UserDataSource extends FirestoreDataSource<UserDoc, Context> {}
+class UserDataSource extends FirestoreDataSource<UserDoc> {}
 
 let userSource: UserDataSource
 
 describe('FirestoreDataSource', () => {
   beforeEach(() => {
     userSource = new UserDataSource(usersCollection as CollectionReference<UserDoc>)
-    userSource.initialize({})
   })
 
   afterEach(async () => {
@@ -47,18 +42,6 @@ describe('FirestoreDataSource', () => {
     }, err => {
       assert.strictEqual((err as TypeError).name, 'Error')
       assert.strictEqual((err as TypeError).message, 'FirestoreDataSource must be created with a Firestore collection (from @google-cloud/firestore)')
-      return true
-    })
-  })
-
-  it('Should throw if not called on an initialised instance', async () => {
-    assert.throws(() => {
-      const uninitialised = new UserDataSource(usersCollection as CollectionReference<UserDoc>)
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      uninitialised.findOneById('a') // this isn't a promise
-    }, err => {
-      assert.strictEqual((err as Error).name, 'Error')
-      assert.strictEqual((err as Error).message, 'DataSource not initialized')
       return true
     })
   })
@@ -260,7 +243,7 @@ describe('FirestoreDataSource', () => {
       const foundAgain = await userSource.findOneById(createdOne.id, { ttl: 1000 })
 
       assert.deepStrictEqual(foundOne, foundAgain)
-      assert.ok(foundAgain!.createdAt instanceof Timestamp)
+      assert.ok(foundAgain?.createdAt instanceof Timestamp)
     })
 
     it('Should serialize and de-serialize Firestore GeoPoints', async () => {
@@ -277,7 +260,7 @@ describe('FirestoreDataSource', () => {
       const foundAgain = await userSource.findOneById(createdOne.id, { ttl: 1000 })
 
       assert.deepStrictEqual(foundOne, foundAgain)
-      assert.ok(foundAgain!.locatedAt instanceof GeoPoint)
+      assert.ok(foundAgain?.locatedAt instanceof GeoPoint)
     })
 
     it('Should serialize and de-serialize Firestore DocumentReferences', async () => {
@@ -294,7 +277,7 @@ describe('FirestoreDataSource', () => {
       const foundAgain = await userSource.findOneById(createdOne.id, { ttl: 1000 })
 
       assert.deepStrictEqual(foundOne, foundAgain)
-      assert.ok(foundAgain!.documentRef instanceof DocumentReference)
+      assert.ok(foundAgain?.documentRef instanceof DocumentReference)
     })
   })
 

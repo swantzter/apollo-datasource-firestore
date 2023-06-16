@@ -1,6 +1,8 @@
 module.exports = {
   file: ['tests/setup.ts'],
   exit: true,
-  require: ['ts-node/register'],
-  extension: ['ts']
+  extensions: ['ts'],
+  'node-option': [
+    'loader=ts-node/esm'
+  ]
 }

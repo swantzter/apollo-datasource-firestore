@@ -1,11 +1,11 @@
-import { CollectionReference, FieldPath } from '@google-cloud/firestore'
-import { KeyValueCache } from 'apollo-server-caching'
+import { type CollectionReference, FieldPath } from '@google-cloud/firestore'
+import { type KeyValueCache } from '@apollo/utils.keyvaluecache'
 import DataLoader from 'dataloader'
-import { FirestoreDataSourceOptions } from './datasource'
+import { type FirestoreDataSourceOptions } from './datasource'
 import { replacer, reviverFactory } from './helpers'
 
 // https://github.com/graphql/dataloader#batch-function
-const orderDocs = <V>(ids: readonly string[]) => (
+const orderDocs = <V extends { id?: string }>(ids: readonly string[]) => (
   docs: Array<V | undefined>,
   keyFn?: (source: V) => string
 ) => {
@@ -32,7 +32,7 @@ const orderDocs = <V>(ids: readonly string[]) => (
 export interface createCatchingMethodArgs<DType> {
   collection: CollectionReference<DType>
   cache: KeyValueCache
-  options: FirestoreDataSourceOptions
+  options?: FirestoreDataSourceOptions
 }
 
 export interface FindArgs {
