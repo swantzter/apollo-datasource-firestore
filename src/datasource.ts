@@ -50,7 +50,7 @@ export class FirestoreDataSource<TData extends LibraryFields> implements CachedM
     return results
   }
 
-  async createOne (newDoc: (WithFieldValue<TData> & LibraryFields) | Omit<WithFieldValue<TData>, keyof LibraryFields>, { ttl }: QueryFindArgs = {}) {
+  async createOne (newDoc: (WithFieldValue<Omit<TData, keyof LibraryFields>> & Pick<LibraryFields, 'id'> & Partial<Omit<LibraryFields, 'id'>>) | Omit<WithFieldValue<TData>, keyof LibraryFields>, { ttl }: QueryFindArgs = {}) {
     if ('id' in newDoc) {
       return await this.updateOne(newDoc)
     } else {
@@ -72,7 +72,7 @@ export class FirestoreDataSource<TData extends LibraryFields> implements CachedM
     return response
   }
 
-  async updateOne (data: Omit<WithFieldValue<Omit<TData, keyof LibraryFields>> & LibraryFields, 'createdAt' | 'updatedAt'>) {
+  async updateOne (data: (WithFieldValue<Omit<TData, keyof LibraryFields>> & Pick<TData, 'id'> & Partial<Omit<LibraryFields, 'id'>>)) {
     this.logger?.debug(`FirestoreDataSource/updateOne: Updating doc id ${data.id as string}`)
     await this.collection
       .doc(data.id)
