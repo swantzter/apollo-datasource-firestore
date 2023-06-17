@@ -1,6 +1,6 @@
 {
   "name": "apollo-datasource-firestore",
-  "version": "6.0.0",
+  "version": "6.0.1",
   "description": "An Apollo DataSource for Firestore",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
