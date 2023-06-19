@@ -23,7 +23,7 @@ by passing a collection reference created by the Firestore library.
 ```typescript
 import { FirestoreDataSource } from 'apollo-datasource-firestore';
 
-export interface UsersDoc {
+export interface UserDoc {
   /**
    * A string id value is required for entities using this library.
    * It will be used for the firestore document ID but not stored in the document in firestore.
