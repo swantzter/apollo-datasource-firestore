@@ -1,5 +1,5 @@
 module.exports = {
-  extends: 'standard-with-typescript',
+  extends: 'love',
   parserOptions: {
     project: 'tsconfig.json'
   },

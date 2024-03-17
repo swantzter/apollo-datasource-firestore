@@ -11,7 +11,8 @@
     "test": "mocha tests/**/*.test.ts",
     "coverage": "c8 -r lcov -r text npm test",
     "lint": "eslint src/**/*.ts tests/**/*.ts",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",
@@ -31,26 +32,26 @@
   },
   "homepage": "https://github.com/swantzter/apollo-datasource-firestore#readme",
   "devDependencies": {
-    "@google-cloud/firestore": "^7.1.0",
-    "@types/mocha": "^10.0.4",
-    "@types/node": "^20.9.2",
-    "@types/node-fetch": "^2.6.9",
-    "c8": "^8.0.1",
-    "eslint": "^8.54.0",
-    "eslint-config-standard-with-typescript": "^40.0.0",
-    "firebase-tools": "^12.9.1",
+    "@google-cloud/firestore": "^7.4.0",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.11.28",
+    "@types/node-fetch": "^2.6.11",
+    "c8": "^9.1.0",
+    "eslint": "^8.57.0",
+    "firebase-tools": "^13.5.1",
     "graphql": "^16.8.1",
-    "mocha": "^10.2.0",
-    "ts-node": "^10.9.1",
-    "typescript": "5.0",
-    "undici": "^5.27.2"
+    "mocha": "^10.3.0",
+    "ts-node": "^10.9.2",
+    "typescript": "5.3",
+    "undici": "^6.9.0"
   },
   "peerDependencies": {
     "@google-cloud/firestore": "^5 || ^6 || ^7"
   },
   "dependencies": {
     "@apollo/utils.keyvaluecache": "^3.1.0",
-    "dataloader": "^2.2.2"
+    "dataloader": "^2.2.2",
+    "eslint-config-love": "^43.1.0"
   },
   "files": [
     "/dist"

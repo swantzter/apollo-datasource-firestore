@@ -1,4 +1,5 @@
 /* eslint-env mocha */
+/* eslint-disable @typescript-eslint/non-nullable-type-assertion-style */
 import { type CollectionReference, DocumentReference, FieldValue, Firestore, GeoPoint, Timestamp } from '@google-cloud/firestore'
 import { fetch } from 'undici'
 import assert from 'assert'
