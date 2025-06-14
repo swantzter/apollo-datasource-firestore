@@ -1,7 +1,7 @@
 import { type CollectionReference, DocumentReference, type FirestoreDataConverter, GeoPoint, type PartialWithFieldValue, Timestamp } from '@google-cloud/firestore'
 
 export const isFirestoreCollection = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   maybeCollection: any
 ): maybeCollection is CollectionReference => {
   return (
@@ -21,14 +21,14 @@ export interface LibraryFields {
 
 export const FirestoreConverter = <TData extends LibraryFields>(): FirestoreDataConverter<TData> => ({
   toFirestore: ({ id, collection, createdAt, updatedAt, ...data }: PartialWithFieldValue<TData>) => data,
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+
   fromFirestore: (snap: FirebaseFirestore.QueryDocumentSnapshot) => ({
     ...snap.data(),
     id: snap.id,
     collection: snap.ref.parent.id,
     createdAt: snap.createTime,
-    updatedAt: snap.updateTime
-  }) as TData
+    updatedAt: snap.updateTime,
+  }) as TData,
 })
 
 export interface Logger {

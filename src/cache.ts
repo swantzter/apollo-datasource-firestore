@@ -58,10 +58,10 @@ export interface CachedMethods<DType> {
 export const createCachingMethods = <DType extends { id: string }>({
   collection,
   cache,
-  options
+  options,
 }: createCatchingMethodArgs<DType>): CachedMethods<DType> => {
   const loader = new DataLoader<string, DType>(async (ids) => {
-    options?.logger?.debug(`FirestoreDataSource/DataLoader: loading for IDs: ${ids}`)
+    options?.logger?.debug(`FirestoreDataSource/DataLoader: loading for IDs: ${ids.join(', ')}`)
     const qSnap = await collection.where(FieldPath.documentId(), 'in', ids).get()
     const documents = qSnap.docs.map(dSnap => dSnap.exists ? dSnap.data() : undefined)
     options?.logger?.debug(`FirestoreDataSource/DataLoader: response count: ${documents.length}`)
@@ -93,7 +93,7 @@ export const createCachingMethods = <DType extends { id: string }>({
     },
 
     findManyByIds: async (ids, args = {}) => {
-      options?.logger?.debug(`FirestoreDataSource: Running query for IDs ${ids}`)
+      options?.logger?.debug(`FirestoreDataSource: Running query for IDs ${ids.join(', ')}`)
       return await Promise.all(ids.map(async (id) => await methods.findOneById(id, args)))
     },
 
@@ -121,7 +121,7 @@ export const createCachingMethods = <DType extends { id: string }>({
     cache,
     cachePrefix,
     reviver,
-    replacer
+    replacer,
   }
 
   return methods

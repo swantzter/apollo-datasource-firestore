@@ -33,7 +33,7 @@ describe('FirestoreDataSource', () => {
 
   afterEach(async () => {
     await fetch(`http://${process.env.FIRESTORE_EMULATOR_HOST}/emulator/v1/projects/${process.env.GCLOUD_PROJECT}/databases/(default)/documents`, {
-      method: 'DELETE'
+      method: 'DELETE',
     })
   })
 
@@ -51,7 +51,7 @@ describe('FirestoreDataSource', () => {
   describe('createOne', () => {
     it('Should create a doc and return it', async () => {
       const newUser = {
-        email: 'hello@test.com'
+        email: 'hello@test.com',
       }
       const { id, collection, createdAt, updatedAt, ...data } = await userSource.createOne(newUser) as UserDoc
       assert.deepStrictEqual(data, newUser)
@@ -65,7 +65,7 @@ describe('FirestoreDataSource', () => {
     it('Should create a doc with a field value and return it', async () => {
       const newUser = {
         email: 'hello@test.com',
-        createdAt: FieldValue.serverTimestamp()
+        createdAt: FieldValue.serverTimestamp(),
       }
       const { id, collection, createdAt, updatedAt, ...data } = await userSource.createOne(newUser) as UserDoc
       assert.deepStrictEqual(data, { email: newUser.email })
@@ -79,7 +79,7 @@ describe('FirestoreDataSource', () => {
     it('Should create a doc with a specific ID', async () => {
       const newUser = {
         id: 'amazingUser',
-        email: 'hello123@test.com'
+        email: 'hello123@test.com',
       }
       const { collection, createdAt, updatedAt, ...created } = await userSource.createOne(newUser) as UserDoc
 
@@ -92,7 +92,7 @@ describe('FirestoreDataSource', () => {
 
     it('Should not store the id or collection as a field in the db', async () => {
       const { id, collection, createdAt, updatedAt, ...data } = await userSource.createOne({
-        email: 'hello2@test.com'
+        email: 'hello2@test.com',
       }) as UserDoc
       const dSnap = await usersCollection.doc(id).get()
       const dbData = dSnap.data()
@@ -103,7 +103,7 @@ describe('FirestoreDataSource', () => {
   describe('updateOne', () => {
     it('Should update a doc', async () => {
       const { id: createdId, createdAt: createdCreatedAt, updatedAt: createdUpdatedAt, ...created } = await userSource.createOne({
-        email: 'hello@test.com'
+        email: 'hello@test.com',
       }) as UserDoc
 
       const { id: updatedId, createdAt: updatedCreatedAt, updatedAt: updatedUpdatedAt, ...updated } = await userSource.updateOne({ id: createdId, ...created, name: 'Test' }) as UserDoc
@@ -118,10 +118,10 @@ describe('FirestoreDataSource', () => {
   describe('updateOnePartial', () => {
     it('Should partially update a doc', async () => {
       const createData = {
-        email: 'hello3@test.com'
+        email: 'hello3@test.com',
       }
       const updateData = {
-        name: 'Testson'
+        name: 'Testson',
       }
 
       const { id: createdId, collection: newCollection, createdAt: createdCreatedAt, updatedAt: createdUpdatedAt } = await userSource.createOne(createData) as UserDoc
@@ -136,10 +136,10 @@ describe('FirestoreDataSource', () => {
 
     it('Partial update should update cache', async () => {
       const createData = {
-        email: 'hello3@test.com'
+        email: 'hello3@test.com',
       }
       const updateData = {
-        name: 'Testson'
+        name: 'Testson',
       }
 
       const { id: createdId, collection: newCollection, createdAt: createdCreatedAt, updatedAt: createdUpdatedAt, ...created } = await userSource.createOne(createData, { ttl: 60 }) as UserDoc
@@ -158,10 +158,10 @@ describe('FirestoreDataSource', () => {
 
     it('Partial update should not be able to change the ID', async () => {
       const createData = {
-        email: 'hello3@test.com'
+        email: 'hello3@test.com',
       }
       const updateData = {
-        name: 'Testson'
+        name: 'Testson',
       }
 
       const { id: createdId, collection: newCollection } = await userSource.createOne(createData) as UserDoc
@@ -177,10 +177,10 @@ describe('FirestoreDataSource', () => {
 
     it('Partial update should not be able to change the collection', async () => {
       const createData = {
-        email: 'hello3@test.com'
+        email: 'hello3@test.com',
       }
       const updateData = {
-        name: 'Testson'
+        name: 'Testson',
       }
 
       const { id: createdId, collection: newCollection } = await userSource.createOne(createData) as UserDoc
@@ -196,10 +196,10 @@ describe('FirestoreDataSource', () => {
 
     it('Partial update should not be able to change the createdAt date', async () => {
       const createData = {
-        email: 'hello3@test.com'
+        email: 'hello3@test.com',
       }
       const updateData = {
-        name: 'Testson'
+        name: 'Testson',
       }
 
       const { id: createdId, createdAt: createdCreatedAt } = await userSource.createOne(createData) as UserDoc
@@ -216,7 +216,7 @@ describe('FirestoreDataSource', () => {
   describe('deleteOne', () => {
     it('Should delete a doc', async () => {
       const { id: createdId } = await userSource.createOne({
-        email: 'hello@test.com'
+        email: 'hello@test.com',
       }) as UserDoc
 
       await userSource.deleteOne(createdId)
@@ -232,12 +232,12 @@ describe('FirestoreDataSource', () => {
       // also make sure they are created outside of the DataSource
       // as things will be cached on creation
       const dRefOne = await usersCollection.add({
-        email: 'hello@test.com'
+        email: 'hello@test.com',
       })
       const dSnapOne = await dRefOne.get()
 
       await usersCollection.add({
-        email: 'hello22@test.com'
+        email: 'hello22@test.com',
       })
 
       const foundOne = await userSource.findOneById(dRefOne.id)
@@ -247,7 +247,7 @@ describe('FirestoreDataSource', () => {
 
     it('Should cache a found doc', async () => {
       const createdOne = await userSource.createOne({
-        email: 'hello@test.com'
+        email: 'hello@test.com',
       }) as UserDoc
 
       const foundOne = await userSource.findOneById(createdOne.id, { ttl: 1000 })
@@ -263,7 +263,7 @@ describe('FirestoreDataSource', () => {
     it('Should serialize and de-serialize Firestore Timestamps', async () => {
       const createdOne = await userSource.createOne({
         email: 'hello@test.com',
-        createdAt: Timestamp.now()
+        createdAt: Timestamp.now(),
       }) as UserDoc
 
       const foundOne = await userSource.findOneById(createdOne.id, { ttl: 1000 })
@@ -280,7 +280,7 @@ describe('FirestoreDataSource', () => {
     it('Should serialize and de-serialize Firestore GeoPoints', async () => {
       const createdOne = await userSource.createOne({
         email: 'hello@test.com',
-        locatedAt: new GeoPoint(51.145, 12.5512334)
+        locatedAt: new GeoPoint(51.145, 12.5512334),
       }) as UserDoc
 
       const foundOne = await userSource.findOneById(createdOne.id, { ttl: 1000 })
@@ -297,7 +297,7 @@ describe('FirestoreDataSource', () => {
     it('Should serialize and de-serialize Firestore DocumentReferences', async () => {
       const createdOne = await userSource.createOne({
         email: 'hello@test.com',
-        documentRef: firestore.doc('users/abc')
+        documentRef: firestore.doc('users/abc'),
       }) as UserDoc
 
       const foundOne = await userSource.findOneById(createdOne.id, { ttl: 1000 })
@@ -316,13 +316,13 @@ describe('FirestoreDataSource', () => {
     it('Should find multiple documents by ID', async () => {
       // make sure we have extra users in the DB
       const createdOne = await userSource.createOne({
-        email: 'hello@test.com'
+        email: 'hello@test.com',
       }) as UserDoc
       const createdTwo = await userSource.createOne({
-        email: 'hello2@test.com'
+        email: 'hello2@test.com',
       }) as UserDoc
       await userSource.createOne({
-        email: 'hello3@test.com'
+        email: 'hello3@test.com',
       }) as UserDoc
 
       const foundOnes = await userSource.findManyByIds([createdTwo.id, createdOne.id])
@@ -334,13 +334,13 @@ describe('FirestoreDataSource', () => {
       const createPromises: Array<Promise<UserDoc | undefined>> = []
       for (let idx = 0; idx < 23; idx++) {
         createPromises.push(userSource.createOne({
-          email: `hello${idx}@test.com`
+          email: `hello${idx}@test.com`,
         }))
       }
       const created = await Promise.all(createPromises)
-      await Promise.all(created.map(c => userSource.deleteFromCacheById(c!.id))) // eslint-disable-line @typescript-eslint/promise-function-async
+      await Promise.all(created.map(async c => { await userSource.deleteFromCacheById(c!.id) })) // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
-      const foundOnes = await userSource.findManyByIds(created.map(u => u!.id))
+      const foundOnes = await userSource.findManyByIds(created.map(u => u!.id)) // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
       assert.deepStrictEqual(foundOnes, created)
     })
@@ -352,17 +352,17 @@ describe('FirestoreDataSource', () => {
       const email = 'hello@test.com'
       const userOne = {
         email,
-        name: 'One'
+        name: 'One',
       }
       const userTwo = {
         email,
-        name: 'Two'
+        name: 'Two',
       }
       const { id: idOne } = await usersCollection.add(userOne)
       const { id: idTwo } = await usersCollection.add(userTwo)
       await usersCollection.add({
         email: 'other@test.com',
-        name: 'Three'
+        name: 'Three',
       })
 
       const result = await userSource.findManyByQuery(c => c.where('email', '==', email).orderBy('name'))

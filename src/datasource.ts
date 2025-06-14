@@ -46,7 +46,7 @@ export class FirestoreDataSource<TData extends LibraryFields> implements CachedM
     if (this.dataLoader && results) {
       await this.primeLoader(results, ttl)
     }
-    this.logger?.debug(`FirestoreDataSource/findManyByQuery: complete. rows: ${qSnap.size}, Read Time: ${qSnap.readTime.toDate()}`)
+    this.logger?.debug(`FirestoreDataSource/findManyByQuery: complete. rows: ${qSnap.size}, Read Time: ${qSnap.readTime.toDate().toISOString()}`)
     return results
   }
 
@@ -114,7 +114,7 @@ export class FirestoreDataSource<TData extends LibraryFields> implements CachedM
     const methods = createCachingMethods<TData>({
       collection: this.collection,
       cache: this.cache,
-      options
+      options,
     })
 
     Object.assign(this, methods)

@@ -3,6 +3,6 @@ module.exports = {
   exit: true,
   extensions: ['ts'],
   'node-option': [
-    'import=ts-node/esm'
-  ]
+    'import=ts-node/esm',
+  ],
 }
