@@ -11,6 +11,7 @@
     "test": "mocha tests/**/*.test.ts",
     "coverage": "c8 -r lcov -r text npm test",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
     "prepack": "npm run build",
     "postversion": "git push && git push --tags"
   },
@@ -32,22 +33,22 @@
   },
   "homepage": "https://github.com/swantzter/apollo-datasource-firestore#readme",
   "devDependencies": {
-    "@google-cloud/firestore": "^7.11.1",
+    "@google-cloud/firestore": "^8.0.0",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^24.0.1",
-    "@types/node-fetch": "^2.6.12",
+    "@types/node": "^24.10.2",
+    "@types/node-fetch": "^2.6.13",
     "c8": "^10.1.3",
-    "eslint": "^9.29.0",
-    "firebase-tools": "^14.7.0",
-    "graphql": "^16.11.0",
-    "mocha": "^11.6.0",
-    "neostandard": "^0.12.1",
+    "eslint": "^9.39.1",
+    "firebase-tools": "^14.27.0",
+    "graphql": "^16.12.0",
+    "mocha": "^11.7.5",
+    "neostandard": "^0.12.2",
     "ts-node": "^10.9.2",
-    "typescript": "5.8",
-    "undici": "^7.10.0"
+    "typescript": "5.9",
+    "undici": "^7.16.0"
   },
   "peerDependencies": {
-    "@google-cloud/firestore": "^5 || ^6 || ^7"
+    "@google-cloud/firestore": "^5 || ^6 || ^7 || ^8"
   },
   "dependencies": {
     "@apollo/utils.keyvaluecache": "^4.0.0",
